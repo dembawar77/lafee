@@ -14,11 +14,11 @@
         /* --- DESIGN : ROSE & ROUGE --- */
         body {
             font-family: 'Nunito', sans-serif;
-            /* Dégradé radial doux : Centre Rose pâle -> Bords un peu plus soutenus */
+            /* Fond dégradé doux */
             background: radial-gradient(circle at center, #fff0f5 0%, #ffe4e6 100%);
-            overflow: hidden;
-            touch-action: pan-y; /* Empêche le scroll, active le swipe */
-            user-select: none;
+            overflow: hidden; /* Pas de scroll */
+            touch-action: pan-y;
+            user-select: none; /* Impossible de sélectionner le texte */
         }
 
         .handwritten { font-family: 'Dancing Script', cursive; }
@@ -30,52 +30,54 @@
             transition: opacity 0.5s ease;
         }
 
-        /* LE PLATEAU (La table où sont posées les photos) */
+        /* LE PLATEAU DE JEU */
         #board {
             width: 100%; height: 100%; position: relative; overflow: hidden;
             display: flex; justify-content: center; align-items: center;
         }
 
-        /* STYLE POLAROID */
+        /* STYLE DES CARTES POLAROID */
         .card {
             width: 300px; /* Largeur idéale mobile */
             height: 480px;
             background: white;
-            border-radius: 4px; /* Coins peu arrondis comme un vrai papier photo */
+            border-radius: 4px; /* Coins nets pour effet papier */
             position: absolute;
             box-shadow: 0 10px 30px rgba(190, 18, 60, 0.2); /* Ombre portée */
             display: flex; flex-direction: column; 
-            padding: 15px 15px 60px 15px; /* Espace blanc en bas pour le texte */
+            padding: 15px 15px 60px 15px; /* Espace blanc en bas pour écrire */
             cursor: grab;
-            transition: transform 0.1s; /* Réactivité immédiate au doigt */
+            transition: transform 0.1s; /* Fluidité du mouvement */
             border: 1px solid #fce7f3;
         }
 
+        /* Zone de l'image */
         .card-image-container {
             width: 100%; height: 100%; 
-            background: #fce7f3; /* Fond gris/rose si l'image charge pas */
+            background: #fce7f3; 
             overflow: hidden;
+            position: relative;
         }
 
         .card-img {
             width: 100%; height: 100%; object-fit: cover; pointer-events: none;
         }
 
-        /* LE TEXTE MANUSCRIT EN BAS */
+        /* Texte manuscrit en bas */
         .card-text {
             position: absolute; bottom: 10px; left: 0; width: 100%;
             text-align: center;
             color: #be123c; /* Rouge Rubis */
             font-size: 1.8rem; 
-            transform: rotate(-2deg); /* Effet "écrit à la main" */
+            transform: rotate(-2deg);
         }
 
-        /* LA CARTE DE FIN (DEMANDE) */
+        /* CARTE FINALE (DEMANDE) */
         .card.final {
             background: linear-gradient(135deg, #fff 0%, #fff0f5 100%);
             border: 4px solid #fda4af;
             justify-content: center; align-items: center; padding: 20px;
-            cursor: default; /* Celle-là ne bouge pas */
+            cursor: default;
         }
 
         /* BOUTON MUSIQUE */
@@ -96,7 +98,7 @@
 
     <div id="preloader">
         <div class="text-6xl text-rose-500 heartbeat mb-4">❤️</div>
-        <div class="text-rose-400 font-bold text-sm tracking-widest uppercase">Chargement de nos souvenirs...</div>
+        <div class="text-rose-400 font-bold text-sm tracking-widest uppercase">Chargement...</div>
     </div>
 
     <div id="music-btn" onclick="toggleMusic()">
@@ -114,43 +116,49 @@
     </div>
 
     <script>
-        // --- CONFIGURATION ---
+        // =================================================================
+        // C'EST ICI QUE TU MODIFIES TES PHOTOS !
+        // =================================================================
         
-        // TES 10 PHOTOS (Nommées photo1.jpeg à photo10.jpeg)
-        // ATTENTION : J'ai mis ".jpeg" ici pour correspondre à ton GitHub !
+        // Colle tes liens ImgBB (ou autre) ici.
+        // L'ordre est : 1 (Celle du dessus) -> 10 (La dernière avant la fin)
+        
         const photos = [
-            { img: "photo1.jpeg", text: "Le début de tout..." },
-            { img: "photo2.jpg", text: "Ce jour là ❤️" },
-            { img: "photo3.jpeg", text: "Ton sourire..." },
-            { img: "photo4.jpeg", text: "Sénégal vibes 🇸🇳" },
-            { img: "photo5.jpeg", text: "Nos délires 😂" },
-            { img: "photo6.jpeg", text: "Toi si belle ✨" },
-            { img: "photo7.jpeg", text: "Complices" },
-            { img: "photo8.jpeg", text: "Ma force" },
-            { img: "photo9.jpg", text: "Indispensable" },
-            { img: "photo10.jpeg", text: "Prête ? ❤️" },
+            { img: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600", text: "Le début de tout..." },
+            { img: "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=600", text: "Ce jour là ❤️" },
+            { img: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600", text: "Ton sourire..." },
+            { img: "https://images.unsplash.com/photo-1621600411688-4be93cd68504?w=600", text: "Sénégal vibes 🇸🇳" },
+            { img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600", text: "Nos délires 😂" },
+            { img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600", text: "Toi si belle ✨" },
+            { img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600", text: "Complices" },
+            { img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600", text: "Ma force" },
+            { img: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600", text: "Indispensable" },
+            { img: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=600", text: "Prête ? ❤️" },
         ];
 
         const myPhoneNumber = "221777305494"; // Ton numéro WhatsApp
 
-        // --- MOTEUR (NE PAS TOUCHER) ---
+        // =================================================================
+        // MOTEUR DU SITE (NE PAS TOUCHER)
+        // =================================================================
+        
         const board = document.getElementById('board');
         const preloader = document.getElementById('preloader');
         let loadedCount = 0;
 
-        // Vérifie si les images sont chargées
+        // Fonction de chargement intelligent
         function checkLoaded() {
             loadedCount++;
-            // Dès qu'on a chargé toutes les images, on cache le chargement
+            // Quand tout est chargé (ou échoué), on lance le site
             if (loadedCount >= photos.length) {
                 setTimeout(() => {
                     preloader.style.opacity = '0';
                     setTimeout(() => preloader.style.display = 'none', 500);
-                }, 800);
+                }, 1000);
             }
         }
 
-        // 1. Création de la Carte Finale (Celle tout au fond)
+        // 1. Ajouter la CARTE FINALE (Tout au fond de la pile)
         const finalCard = document.createElement('div');
         finalCard.className = 'card final';
         finalCard.innerHTML = `
@@ -166,18 +174,17 @@
         `;
         board.appendChild(finalCard);
 
-        // 2. Création des Polaroids (Empilés par dessus)
+        // 2. Empiler les photos (Boucle inversée pour le bon ordre visuel)
         for (let i = photos.length - 1; i >= 0; i--) {
             const data = photos[i];
             const card = document.createElement('div');
             card.className = 'card';
             
-            // Rotation aléatoire
+            // Rotation aléatoire pour l'effet réaliste
             const rotation = (Math.random() - 0.5) * 8; 
             card.style.transform = `rotate(${rotation}deg)`;
             card.dataset.rotation = rotation;
 
-            // Structure HTML du Polaroid
             card.innerHTML = `
                 <div class="card-image-container">
                     <img src="${data.img}" class="card-img" onload="checkLoaded()" onerror="checkLoaded()">
@@ -186,12 +193,10 @@
             `;
             
             board.appendChild(card);
-            
-            // On active le Swipe sur cette carte
             initHammer(card);
         }
 
-        // Sécurité si 0 photos
+        // Fallback si la liste est vide
         if (photos.length === 0) checkLoaded();
 
         // 3. Gestion du Swipe (Hammer.js)
@@ -209,6 +214,7 @@
                 const keep = Math.abs(e.deltaX) < 100 && Math.abs(e.velocityX) < 0.5;
 
                 if (!keep) {
+                    // ÉJECTION
                     const endX = Math.max(Math.abs(e.velocityX) * window.innerWidth, window.innerWidth);
                     const toX = e.deltaX > 0 ? endX : -endX;
                     const endY = Math.abs(e.velocityY) * window.innerHeight;
@@ -218,11 +224,12 @@
                     
                     setTimeout(() => { card.remove(); }, 300);
 
-                    // Confettis à la fin
+                    // Confettis si c'est la fin
                     if (document.querySelectorAll('.card:not(.final)').length <= 1) {
                          setTimeout(launchConfetti, 500);
                     }
                 } else {
+                    // RETOUR À LA PLACE
                     card.style.transform = `translate(0, 0) rotate(${card.dataset.rotation}deg)`;
                 }
             });
@@ -238,7 +245,7 @@
                 audio.pause();
                 musicIcon.innerText = "🔇";
             } else {
-                audio.play().catch(e => console.log("Audio autoplay bloqué"));
+                audio.play().catch(e => console.log("Audio bloqué par navigateur"));
                 musicIcon.innerText = "🎵";
             }
             isPlaying = !isPlaying;
