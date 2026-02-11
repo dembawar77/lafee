@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pour Eliane, ma fée 🧚🏾‍♀️❤️</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+
+    <style>
+        /* --- DESIGN ROSE & ROUGE --- */
+        body {
+            font-family: 'Nunito', sans-serif;
+            /* Dégradé subtil : Rose poudré vers une touche plus chaude */
+            background: radial-gradient(circle at center, #fff0f5 0%, #ffe4e6 100%);
+            overflow: hidden;
+            touch-action: pan-y;
+            user-select: none;
+        }
+
+        .handwritten { font-family: 'Dancing Script', cursive; }
+
+        /* Écran de chargement */
+        #preloader {
+            position: fixed; inset: 0; background: #fff0f5; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Conteneur des cartes */
+        #board {
+            width: 100%; height: 100%; position: relative; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* Style Carte Polaroid */
+        .card {
+            width: 300px; /* Taille optimisée mobile */
+            height: 480px;
+            background: white;
+            border-radius: 15px;
+            position: absolute;
+            box-shadow: 0 10px 30px rgba(190, 18, 60, 0.15); /* Ombre rouge légère */
+            display: flex; flex-direction: column; padding: 12px;
+            cursor: grab;
+            transition: transform 0.1s;
+            border: 1px solid #fff1f2;
+        }
+
+        .card-image-container {
+            flex: 1; width: 100%; overflow: hidden; border-radius: 8px;
+            background: #fce7f3; position: relative;
+        }
+
+        .card-img {
+            width: 100%; height: 100%; object-fit: cover; pointer-events: none;
+        }
+
+        .card-text {
+            height: 70px;
+            display: flex; align-items: center; justify-content: center; text-align: center;
+            color: #be123c; /* Rouge Rubis pour le texte */
+            font-size: 1.6rem; line-height: 1.1;
+            transform: rotate(-1deg);
+        }
+
+        /* Carte Finale Spéciale */
+        .card.final {
+            background: linear-gradient(135deg, #fff 0%, #fff0f5 100%);
+            border: 2px solid #fda4af;
+            justify-content: center; align-items: center; padding: 25px; cursor: default;
+        }
+
+        /* Bouton Musique Flottant */
+        #music-btn {
+            position: fixed; top: 20px; right: 20px; z-index: 50;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%; width: 45px; height: 45px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            cursor: pointer; border: 1px solid #fda4af;
+        }
+
+        .heartbeat { animation: beat 1.5s infinite; }
+        @keyframes beat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    </style>
+</head>
+<body>
+
+    <div id="preloader">
+        <div class="text-6xl text-rose-500 heartbeat mb-4">❤️</div>
+        <div class="text-rose-400 font-bold text-sm tracking-widest uppercase">Chargement...</div>
+    </div>
+
+    <div id="music-btn" onclick="toggleMusic()">
+        <span id="music-icon" class="text-xl">🔇</span>
+    </div>
+    <audio id="bg-music" loop>
+        <source src="https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="board">
+        </div>
+
+    <div class="fixed bottom-6 w-full text-center pointer-events-none z-0">
+        <p class="text-rose-400 opacity-60 font-bold text-xs animate-bounce">Glisse les photos ↔️</p>
+    </div>
+
+    <script>
+        // --- 1. CONFIGURATION (Tes 10 Photos) ---
+        // L'ordre d'affichage est : 1 -> 2 -> ... -> 10 -> FIN
+        const photos = [
+            { img: "photo1.jpg", text: "Le début de tout..." },
+            { img: "photo2.jpg", text: "Ce souvenir ❤️" },
+            { img: "photo3.jpg", text: "Ton sourire..." },
+            { img: "photo4.jpg", text: "Nos moments à nous" },
+            { img: "photo5.jpg", text: "Sénégal vibes 🇸🇳" },
+            { img: "photo6.jpg", text: "Toi si belle ✨" },
+            { img: "photo7.jpg", text: "Complices" },
+            { img: "photo8.jpg", text: "Ma force" },
+            { img: "photo9.jpg", text: "Indispensable" },
+            { img: "photo10.jpg", text: "Prête ? ❤️" },
+        ];
+
+        // --- 2. CONFIGURATION FINALE ---
+        const finalCardData = {
+            title: "Bonne Saint-Valentin",
+            subtitle: "Eliane, mon amour, veux-tu être ma Valentine ?",
+            emoji: "💍"
+        };
+        const myPhoneNumber = "221777305494"; // Ton numéro
+
+        // --- MOTEUR DU SITE ---
+        const board = document.getElementById('board');
+        const preloader = document.getElementById('preloader');
+        let loadedCount = 0;
+
+        function checkLoaded() {
+            loadedCount++;
+            if (loadedCount >= photos.length) {
+                setTimeout(() => {
+                    preloader.style.opacity = '0';
+                    setTimeout(() => preloader.style.display = 'none', 500);
+                }, 800);
+            }
+        }
+
+        // Création de la carte finale (Tout au fond)
+        const finalCard = document.createElement('div');
+        finalCard.className = 'card final';
+        finalCard.innerHTML = `
+            <div class="text-7xl mb-6 heartbeat">${finalCardData.emoji}</div>
+            <h1 class="handwritten text-4xl text-rose-600 mb-4 text-center">${finalCardData.title}</h1>
+            <p class="text-rose-500 text-lg text-center mb-8 px-4 leading-relaxed">${finalCardData.subtitle}</p>
+            <a href="https://wa.me/${myPhoneNumber}?text=${encodeURIComponent("OUI mon cœur ! Je veux être ta Valentine ! 💖🥰")}" 
+               class="bg-rose-500 text-white px-8 py-4 rounded-full font-bold shadow-lg transform transition active:scale-95 hover:bg-rose-600 flex items-center gap-2">
+               <span>💌 Envoyer OUI</span>
+            </a>
+        `;
+        board.appendChild(finalCard);
+
+        // Création des photos (Ordre inversé pour l'empilement)
+        for (let i = photos.length - 1; i >= 0; i--) {
+            const data = photos[i];
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            // Rotation aléatoire
+            const rotation = (Math.random() - 0.5) * 8; 
+            card.style.transform = `rotate(${rotation}deg)`;
+            card.dataset.rotation = rotation;
+
+            card.innerHTML = `
+                <div class="card-image-container">
+                    <img src="${data.img}" class="card-img" onload="checkLoaded()" onerror="checkLoaded()">
+                </div>
+                <div class="handwritten card-text">${data.text}</div>
+            `;
+            
+            board.appendChild(card);
+            initHammer(card);
+        }
+
+        // Sécurité si pas d'images
+        if (photos.length === 0) checkLoaded();
+
+        // Gestion du Swipe
+        function initHammer(card) {
+            const hammer = new Hammer(card);
+            
+            hammer.on("pan", (e) => {
+                card.style.transition = "none";
+                const rotation = parseFloat(card.dataset.rotation) + (e.deltaX / 20);
+                card.style.transform = `translate(${e.deltaX}px, ${e.deltaY}px) rotate(${rotation}deg)`;
+            });
+
+            hammer.on("panend", (e) => {
+                card.style.transition = "transform 0.4s ease-out";
+                // Si on a bougé de plus de 100px ou swipe rapide
+                const keep = Math.abs(e.deltaX) < 80 && Math.abs(e.velocityX) < 0.5;
+
+                if (!keep) {
+                    // Ejection
+                    const endX = Math.max(Math.abs(e.velocityX) * window.innerWidth, window.innerWidth);
+                    const toX = e.deltaX > 0 ? endX : -endX;
+                    const endY = Math.abs(e.velocityY) * window.innerHeight;
+                    const toY = e.deltaY > 0 ? endY : -endY;
+                    
+                    card.style.transform = `translate(${toX}px, ${toY + e.deltaY}px) rotate(${e.deltaX/10}deg)`;
+                    
+                    setTimeout(() => { card.remove(); }, 300);
+
+                    // Confettis à la fin
+                    if (document.querySelectorAll('.card:not(.final)').length <= 1) {
+                         setTimeout(launchConfetti, 300);
+                    }
+                } else {
+                    // Retour à la place
+                    card.style.transform = `translate(0, 0) rotate(${card.dataset.rotation}deg)`;
+                }
+            });
+        }
+
+        // Musique
+        const audio = document.getElementById('bg-music');
+        const musicIcon = document.getElementById('music-icon');
+        let isPlaying = false;
+
+        function toggleMusic() {
+            if (isPlaying) {
+                audio.pause();
+                musicIcon.innerText = "🔇";
+            } else {
+                audio.play().catch(e => console.log("Audio autoplay bloqué"));
+                musicIcon.innerText = "🎵";
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // Confettis
+        function launchConfetti() {
+            const duration = 3000;
+            const end = Date.now() + duration;
+            (function frame() {
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#be123c', '#fda4af'] });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#be123c', '#fda4af'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+    </script>
+</body>
+</html>
